@@ -12,11 +12,11 @@ const generateTicketPDF = async (nom, prenom, adrpostale, nomSociete, adrSociete
     Voici votre facture:
 
     Nom: ${nom}
-    Prénom: ${prenom} 
+    Prénom: ${prenom}
     Adresse postale: ${adrpostale}
     Nom de société: ${nomSociete}
     Adresse postale de la société: ${adrSociete}
-    SIRET: ${siret} 
+    SIRET: ${siret}
     Date de la facture: ${formattedDate}
     Désignation:
     Quantité: 1
@@ -39,19 +39,38 @@ const generateTicketPDF = async (nom, prenom, adrpostale, nomSociete, adrSociete
   formData.append('stockagedisponible', 21474836480); // Exemple de stockage
   formData.append('type', 'pdf');
 
+  // Lire le contenu du blob en tant que base64
+  const reader = new FileReader();
+  reader.readAsDataURL(pdfBlob);
+
+  reader.onloadend = async function () {
+    try {
+      const sendMail = await axios.post('http://localhost:8000/user/senmail', {
+        to: email,
+        text: 'Voici votre facture',
+        fichier: reader.result.split(',')[1], // Extraire le contenu base64
+      });
+
+   
+    } catch (error) {
+      console.log('Erreur lors de l\'envoi de l\'e-mail:', error);
+    }
+  };
+
+  // Envoi du fichier PDF à l'API
   try {
+
     const response = await axios.post('http://localhost:8000/file/addFile', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
     });
-    alert('PDF envoyé avec succès');
-    console.log('PDF envoyé:', response);
+    console.log('PDF envoyé avec succès:', response);
   } catch (error) {
-    alert('Erreur lors de l\'envoi du PDF:', error);
     console.error('Erreur lors de l\'envoi du PDF:', error);
   }
 };
+
 
 function Inscription() {
   const [email, setEmail] = useState('');
@@ -96,7 +115,8 @@ function Inscription() {
         stockagedisponible: 21474836480,
         role: role,
       });
-
+      
+  
       console.log('Registration response:', response);
 
       if (response.status === 200) {
@@ -111,6 +131,7 @@ function Inscription() {
         if (userId) {
           // Générer le PDF et l'envoyer à l'API
           await generateTicketPDF(nom, prenom, adressePostal, nomSociete, adrSociete, siret, email, userId);
+          alert('un email vous à été envoyer')
           window.location.href = '/';
         }
       }

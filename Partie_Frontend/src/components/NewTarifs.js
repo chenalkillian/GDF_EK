@@ -85,10 +85,16 @@ function NewTarifs() {
                         fichier: reader.result.split(',')[1], // Extraire le contenu base64
                     });
                     alert('E-mail envoyé avec succès.');
-                    await axios.post('http://localhost:8000/user/add20go', {
-                    email: email,
-                       
-                    });
+             
+                    try{
+                        await axios.post('http://localhost:8000/user/add20go', {
+                            email: email,
+                               
+                            });
+                    } catch (error) {
+                        alert('Erreur lors de l\'ajout de stockage.');
+                        console.error('Erreur:', error);
+                    }
 
                     // Mettre à jour le stockage disponible
                     const { data } = await axios.post('http://localhost:8000/user/UserStockage', {
@@ -112,13 +118,16 @@ function NewTarifs() {
                     formData.append('stockagedisponible', stockageFinal); // Vérifiez cette valeur
                     formData.append('type', 'pdf');
 
-                    await axios.post('http://localhost:8000/file/addFile', formData, {
+                    const ADDfile=await axios.post('http://localhost:8000/file/addFile', formData, {
                         headers: {
                             'Content-Type': 'multipart/form-data',
                         },
                     });
+                    
+                   if(ADDfile){
+                    window.location.href=('/User')
 
-                    window.location.href = '/User';
+                   }
                 } catch (error) {
                     alert('Erreur lors de l\'envoi de l\'e-mail ou de la mise à jour du stockage.');
                     console.error('Erreur:', error);
@@ -128,6 +137,7 @@ function NewTarifs() {
             alert('Erreur lors de la génération de la facture.');
             console.error('Erreur:', error);
         }
+
     };
 
 //on appelle la function de génération de ticket et d'email lors du clique pour valider
@@ -138,7 +148,6 @@ function NewTarifs() {
         try {
             alert('Un email vous a été envoyé avec votre facture.');
             await generateTicketPDF();
-            window.location.href=('/User')
         } catch (error) {
             setError('Une erreur s\'est produite. Veuillez réessayer plus tard.');
             console.error('Erreur lors de la soumission:', error);

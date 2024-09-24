@@ -1,0 +1,176 @@
+/* Styles globaux */
+body {
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif; /* Ajout de la police pour une meilleure lisibilité */
+}
+
+/* Styles pour la vidéo en arrière-plan */
+.background-video {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: -1; /* Assure que la vidéo est derrière le contenu */
+}
+
+/* Styles pour le contenu lorsque l'accès est refusé */
+.denied-container {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-repeat: no-repeat;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  top: 0;
+  z-index: 1000; /* Assure que le contenu refusé est au-dessus des autres éléments */
+}
+
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5); /* Couleur de superposition pour rendre le texte plus lisible */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+}
+
+.denied-text {
+  color: white;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+/* Styles pour les tableaux */
+.title_table {
+  text-align: center;
+  margin-top: 20px;
+  color: #ffffff;
+  font-size: 24px; /* Taille de police augmentée pour le titre */
+}
+
+.infosTable, .infosTable2 {
+  width: 80%;
+  border-collapse: collapse;
+  margin: 20px auto; /* Ajustement pour centrer et espacer les tableaux */
+  background-color: #ffffff; /* Couleur de fond claire pour les tableaux */
+  margin-bottom: 50px;
+}
+
+.infosTable th, .infosTable td, .infosTable2 th, .infosTable2 td {
+  border: 1px solid #dddddd;
+  padding: 12px; /* Augmentation du padding pour plus de lisibilité */
+  text-align: center;
+}
+
+.infosTable th, .infosTable2 th {
+  background-color: #446a99;
+  color: white;
+}
+
+/* Styles pour le filtrage des fichiers */
+.filter-container {
+  display: flex;
+  flex-direction: column; /* Pour que les éléments de filtrage s'alignent verticalement */
+  align-items: center;
+  margin: 20px auto;
+  width: 80%; /* Ajuste la largeur du conteneur de filtrage */
+}
+
+.filter-container input, .filter-container select {
+  margin: 5px;
+  padding: 8px;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+  width: 100%;
+  max-width: 250px; /* Largeur maximale pour les champs de filtrage */
+  box-sizing: border-box; /* Inclut le padding et la bordure dans la largeur totale */
+}
+
+.filter-container select {
+  background-color: #f0f0f0; /* Couleur de fond pour le select */
+}
+
+/* Styles pour les graphiques */
+#chartType {
+  margin: 20px;
+}
+
+.tableStat {
+  height: 50vh;
+  width: 80vw;
+  margin: 5% auto;
+  background-color: #000000e5;
+  border-radius: 20px;
+  padding: 20px; /* Ajout de padding pour l'espace intérieur */
+}
+
+/* Styles pour le sélecteur de graphique */
+.select {
+  width: 20%; /* Ajuste la largeur pour le sélecteur */
+  margin: 0 auto;
+}
+
+.optionSelect {
+  background-color: #18649e;
+  border-radius: 10px;
+  width: 100%;
+  color: white;
+  font-size: 20px;
+  padding: 10px;
+  border: none; /* Suppression de la bordure pour un meilleur aspect */
+}
+
+/* Styles pour le filtrage des fichiers */
+.select2 {
+  width: 50%;
+  background-color: #18649e;
+  border-radius: 10px;
+  display: flex;
+  color: white;
+  margin: 0 auto;
+  justify-content: center;
+  padding: 10px;
+  margin-bottom: 50px;
+}
+
+.search-input2, .filter-select2, .sort-select2 {
+  width: 100%; /* Occupe toute la largeur du conteneur */
+  max-width: 200px; /* Largeur maximale pour les champs de filtrage */
+  padding: 8px; /* Augmentation du padding pour plus de confort */
+  margin: 5px; /* Espacement autour des champs */
+  border-radius: 10px;
+  border: 1px solid #ddd;
+}
+
+.sort-label {
+  color: white;
+  margin-left: 15px;
+}
+
+.sort-select {
+  width: 100%;
+  max-width: 200px; /* Largeur maximale pour le sélecteur de tri */
+  padding: 8px;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+  background-color: #fff; /* Couleur de fond pour le select */
+}
+
+
+.retour{
+  font-size: 50px;
+  background-color: #18649e;
+  border-radius: 30px 0 30px 0;
+  border-width: 0;
+}

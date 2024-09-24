@@ -4,6 +4,9 @@ import './Inscription.css';
 import jsPDF from 'jspdf';
 import logo from '../img/logocard.png'; // Tell webpack this JS file uses this image
 
+
+//page faite par elyes
+
 // Fonction qui génère un PDF et l'envoie à l'API
 const generateTicketPDF = async (nom, prenom, adrpostale, nomSociete, adrSociete, siret, email, userId) => {
   const doc = new jsPDF();
@@ -97,6 +100,7 @@ function Inscription() {
     e.preventDefault();
     setError('');
 
+    //met en rôle User si il n'ya pas de mot de passe ou si il n'est pas bon et si tout est bon il met le rôle en Admin
     const role = adminPassword === '1234' ? 'Admin' : 'User';
 
     // Appel à l'API pour créer un utilisateur

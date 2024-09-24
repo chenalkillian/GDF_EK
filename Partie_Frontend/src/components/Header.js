@@ -2,7 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Outlet, Link } from "react-router-dom";
 import Cookies from 'js-cookie';
 import './Header.css';
+//composant créer par elyes et killian, 
 
+//composant qui permet de créer le menu 
 const Layout = () => {
   const [open, setOpen] = useState(false);
   const [Logout, setLogout] = useState(false);

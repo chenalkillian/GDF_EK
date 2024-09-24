@@ -7,6 +7,7 @@ import { Bar, Line, Pie, Radar } from 'react-chartjs-2';
 import 'chart.js/auto';
 import Video from '../img/city-night-panorama-moewalls-com.mp4';
 
+//page faite par elyes
 
 //composant réservé au user qui sont Admin
 function PageAdmin() {

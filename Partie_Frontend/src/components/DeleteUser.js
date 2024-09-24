@@ -5,6 +5,11 @@ import './DeleteUser.css';
 
 import Cookies from 'js-cookie';
 import Video from '../img/city-night-panorama-moewalls-com.mp4'
+
+
+
+//page faite par elyes
+
 //composant de la suppression du compte de l'utilisateur
 
 const DeleteUser = () => {

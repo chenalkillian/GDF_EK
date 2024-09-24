@@ -8,6 +8,10 @@ import Delete from '../img/delete.png';
 import Ajouter from '../img/ajouter.png';
 import Video from '../img/city-night-panorama-moewalls-com.mp4'
 
+
+//page faite par elyes
+
+
 //composant permettant au user d'insérer, supprimer et télécharger les fichier insérer
 function PageAccueil() {
   const [files, setFiles] = useState([]);

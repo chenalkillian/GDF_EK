@@ -64,15 +64,18 @@ function NewTarifs() {
             reader.readAsDataURL(pdfBlob);
             reader.onloadend = async function () {
                 try {
+                    //envoie de l'email
                     await axios.post('http://localhost:8000/user/senmail', {
                         to: email,
                         text: 'Voici votre facture',
                         fichier: reader.result.split(',')[1],
                     });
                     alert('E-mail envoyé avec succès.');
-    
+                    //ajout des 20go supplémentaire
                     await axios.post('http://localhost:8000/user/add20go', { email: email });
     
+
+                    //mise à jour du stockage
                     const { data } = await axios.post('http://localhost:8000/user/UserStockage', {
                         userID: id,
                     });
@@ -92,6 +95,8 @@ function NewTarifs() {
                     formData.append('stockagedisponible', stockageFinal);
                     formData.append('type', 'pdf');
     
+
+                    //envoie de la facture
                     await axios.post('http://localhost:8000/file/addFile', formData, {
                         headers: {
                             'Content-Type': 'multipart/form-data',

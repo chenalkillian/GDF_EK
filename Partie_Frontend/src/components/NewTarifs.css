@@ -71,3 +71,20 @@
     text-align: center;
     margin-top: 10px;
 }
+
+.loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* Prend toute la hauteur de la fenêtre */
+}
+
+.loading-indicator {
+    text-align: center; /* Centre le texte sous le loader */
+}
+
+.loading-indicator p {
+    margin-top: 10px; /* Espace entre le loader et le texte */
+    font-size: 38px; /* Taille de police pour le texte */
+    color: #ffffff; /* Couleur du texte */
+}

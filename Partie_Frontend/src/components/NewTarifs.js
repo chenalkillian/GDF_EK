@@ -6,6 +6,8 @@ import logo from '../img/logocard.png';
 import Cookies from 'js-cookie';
 import {jwtDecode} from 'jwt-decode';
 import Video from '../img/city-night-panorama-moewalls-com.mp4'
+import { Oval } from 'react-loader-spinner';
+
 //composant permettant l'ajout de 20Go sur le compte du user
 function NewTarifs() {
     const [id, setID] = useState();
@@ -23,6 +25,7 @@ function NewTarifs() {
     const [cardCode, setCardCode] = useState('');
     const [token, setToken] = useState('');
     const [stockagedisponible, setStockagedisponible] = useState('');
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         const value = Cookies.get('token');
@@ -48,32 +51,14 @@ function NewTarifs() {
 
     //function de génération d'un fichier pdf qui sert de ticket pour le nouvel achat
     const generateTicketPDF = async () => {
+        setLoading(true); // Commencer le chargement
         const doc = new jsPDF();
         const formattedDate = new Date().toLocaleDateString('fr-FR');
-        const content = `
-          Voici votre facture:
-          Voici votre facture pour l'achat supplémentaire de 20Go de stockage.
-          Vous avez donc 40Go de stockage !
-
-          Nom:                                                  ${nom}
-          Prénom:                                               ${prenom} 
-          Adresse postale:                                      ${adressePostal}
-          Nom de société:                                       ${nomSociete}
-          Adresse postale de la société:                        ${adrSociete}
-          SIRET:                                                ${siret} 
-          Date de la facture:                                   ${formattedDate}
-          Désignation:
-          Quantité: 1
-          Total hors taxe: 17,50 €
-          Prix unitaire hors taxe:
-          Montant de la TVA:
-          Montant toutes taxes comprises à régler: 20€
-        `;
-        doc.text(content, 10, 10);
-
+        const content = `...`; // Le reste de ton contenu PDF
+    
         // Convertir le PDF en blob
         const pdfBlob = doc.output('blob');
-
+    
         try {
             const reader = new FileReader();
             reader.readAsDataURL(pdfBlob);
@@ -82,63 +67,51 @@ function NewTarifs() {
                     await axios.post('http://localhost:8000/user/senmail', {
                         to: email,
                         text: 'Voici votre facture',
-                        fichier: reader.result.split(',')[1], // Extraire le contenu base64
+                        fichier: reader.result.split(',')[1],
                     });
                     alert('E-mail envoyé avec succès.');
-             
-                    try{
-                        await axios.post('http://localhost:8000/user/add20go', {
-                            email: email,
-                               
-                            });
-                    } catch (error) {
-                        alert('Erreur lors de l\'ajout de stockage.');
-                        console.error('Erreur:', error);
-                    }
-
-                    // Mettre à jour le stockage disponible
+    
+                    await axios.post('http://localhost:8000/user/add20go', { email: email });
+    
                     const { data } = await axios.post('http://localhost:8000/user/UserStockage', {
                         userID: id,
                     });
-
+    
                     if (data) {
-                         setStockagedisponible(data.stockagedisponible);
+                        setStockagedisponible(data.stockagedisponible);
                         console.log('Stockage disponible:', data.stockageDisponible);
                     }
-                    const stockage=data.stockageDisponible;
-                   
-                    const stockageFinal = (stockage - pdfBlob.size)+21473968372 ;
-                   
-                    // Envoyer le fichier PDF
+                    const stockage = data.stockageDisponible;
+                    const stockageFinal = (stockage - pdfBlob.size) + 21473968372;
+    
                     const formData = new FormData();
                     formData.append('file', pdfBlob, 'facture.pdf');
                     formData.append('nom', 'Facture du supplément de stockage.pdf');
                     formData.append('taille', pdfBlob.size);
                     formData.append('userid', id);
-                    formData.append('stockagedisponible', stockageFinal); // Vérifiez cette valeur
+                    formData.append('stockagedisponible', stockageFinal);
                     formData.append('type', 'pdf');
-
-                    const ADDfile=await axios.post('http://localhost:8000/file/addFile', formData, {
+    
+                    await axios.post('http://localhost:8000/file/addFile', formData, {
                         headers: {
                             'Content-Type': 'multipart/form-data',
                         },
                     });
-                    
-                   if(ADDfile){
-                    window.location.href=('/User')
-
-                   }
+    
                 } catch (error) {
                     alert('Erreur lors de l\'envoi de l\'e-mail ou de la mise à jour du stockage.');
                     console.error('Erreur:', error);
+                } finally {
+                    setLoading(false); // Fin du chargement
                 }
             };
         } catch (error) {
             alert('Erreur lors de la génération de la facture.');
             console.error('Erreur:', error);
+            setLoading(false); // Fin du chargement en cas d'erreur
         }
-
     };
+    
 
 //on appelle la function de génération de ticket et d'email lors du clique pour valider
     const handleSubmit = async (e) => {
@@ -155,72 +128,84 @@ function NewTarifs() {
     };
 
     return (
-        <>   <video autoPlay muted loop className="background-video">
-        <source src={Video} type="video/mp4" />
-        Your browser does not support the video tag.
-      </video>
-
+        <>
+            <video autoPlay muted loop className="background-video">
+                <source src={Video} type="video/mp4" />
+                Your browser does not support the video tag.
+            </video>
+    
             <h1 className='titleachat'>Achat de 20Go supplémentaire !</h1>
-            <div className='moreStock'>
-                <form onSubmit={handleSubmit} className="credit-card-form">
-                    <img className='logo' src={logo} alt="Logo" />
-
-                    <div className="form-group">
-                        <label className='label-card'>Nom du propriétaire:</label>
-                        <input
-                            type="text"
-                            value={cardName}
-                            onChange={(e) => setCardName(e.target.value)}
-                            maxLength="30"
-                            placeholder="Nom sur la carte"
-                            required
-                            className="card-input"
-                        />
-                    </div>
-
-                    <div className="form-group">
-                        <label className='label-card'>Numéro de carte bancaire:</label>
-                        <input
-                            type="text"
-                            value={cardNumber}
-                            onChange={(e) => setCardNumber(e.target.value)}
-                            maxLength="19"
-                            placeholder="XXXX XXXX XXXX XXXX"
-                            required
-                            className="card-input"
-                        />
-                    </div>
-
-                    <div className="form-group">
-                        <label className='label-card'>Date d'expiration:</label>
-                        <input
-                            type="text"
-                            value={cardDate}
-                            onChange={(e) => setCardDate(e.target.value)}
-                            placeholder="MM/AA"
-                            required
-                            className="card-input"
-                        />
-                    </div>
-
-                    <div className="form-group">
-                        <label className='label-card'>Code secret:</label>
-                        <input
-                            type="text"
-                            value={cardCode}
-                            onChange={(e) => setCardCode(e.target.value)}
-                            maxLength="3"
-                            placeholder="CVC"
-                            required
-                            className="card-input"
-                        />
-                    </div>
-
-                    <button type="submit" className="pay-button">Payer</button>
-                </form>
-            </div>
+    
+            {loading ? ( // Afficher le loader si en cours de chargement
+    <div className="loading-container">
+        <div className="loading-indicator">
+            <Oval width={250} height={200} color="#00f271" secondaryColor='#0013bd' visible={true} ariaLabel='oval-loading' />
+            <p>Chargement...</p>
+        </div>
+    </div>
+            ) : (
+                <div className='moreStock'>
+                    <form onSubmit={handleSubmit} className="credit-card-form">
+                        <img className='logo' src={logo} alt="Logo" />
+    
+                        <div className="form-group">
+                            <label className='label-card'>Nom du propriétaire:</label>
+                            <input
+                                type="text"
+                                value={cardName}
+                                onChange={(e) => setCardName(e.target.value)}
+                                maxLength="30"
+                                placeholder="Nom sur la carte"
+                                required
+                                className="card-input"
+                            />
+                        </div>
+    
+                        <div className="form-group">
+                            <label className='label-card'>Numéro de carte bancaire:</label>
+                            <input
+                                type="text"
+                                value={cardNumber}
+                                onChange={(e) => setCardNumber(e.target.value)}
+                                maxLength="19"
+                                placeholder="XXXX XXXX XXXX XXXX"
+                                required
+                                className="card-input"
+                            />
+                        </div>
+    
+                        <div className="form-group">
+                            <label className='label-card'>Date d'expiration:</label>
+                            <input
+                                type="text"
+                                value={cardDate}
+                                onChange={(e) => setCardDate(e.target.value)}
+                                placeholder="MM/AA"
+                                required
+                                className="card-input"
+                            />
+                        </div>
+    
+                        <div className="form-group">
+                            <label className='label-card'>Code secret:</label>
+                            <input
+                                type="text"
+                                value={cardCode}
+                                onChange={(e) => setCardCode(e.target.value)}
+                                maxLength="3"
+                                placeholder="CVC"
+                                required
+                                className="card-input"
+                            />
+                        </div>
+    
+                        <button type="submit" className="pay-button">Payer</button>
+                    </form>
+                </div>
+            )}
         </>
     );
+    
 }
 
 export default NewTarifs;

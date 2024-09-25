@@ -54,7 +54,27 @@ function NewTarifs() {
         setLoading(true); // Commencer le chargement
         const doc = new jsPDF();
         const formattedDate = new Date().toLocaleDateString('fr-FR');
-        const content = `...`; // Le reste de ton contenu PDF
+        const content = `
+        Voici votre facture:
+        Voici votre facture pour l'achat supplémentaire de 20Go de stockage.
+        Vous avez donc 40Go de stockage !
+
+        Nom:                                                  ${nom}
+        Prénom:                                               ${prenom} 
+        Adresse postale:                                      ${adressePostal}
+        Nom de société:                                       ${nomSociete}
+        Adresse postale de la société:                        ${adrSociete}
+        SIRET:                                                ${siret} 
+        Date de la facture:                                   ${formattedDate}
+        Désignation:
+        Quantité: 1
+        Total hors taxe: 17,50 €
+        Prix unitaire hors taxe:
+        Montant de la TVA:
+        Montant toutes taxes comprises à régler: 20€
+      `;
+      doc.text(content, 10, 10);
+
     
         // Convertir le PDF en blob
         const pdfBlob = doc.output('blob');

@@ -33,168 +33,175 @@ function PageAccueil() {
   const [filterFormat, setFilterFormat] = useState('');
 
   useEffect(() => {
-    const value = Cookies.get('token');
+    const value = Cookies.get('token'); // Récupère le token stocké dans les cookies
     if (value) {
-      const tokenData = JSON.parse(value);
-      const decodedToken = jwtDecode(tokenData);
+      const tokenData = JSON.parse(value); // Parse le token en un objet JSON
+      const decodedToken = jwtDecode(tokenData); // Décode le token pour extraire les informations utilisateur
       
-      setUserid(decodedToken.id);
-      setQuantiteStockage(decodedToken.quantiteStockage);
-      setToken(tokenData);
+      setUserid(decodedToken.id); // Définit l'ID utilisateur dans l'état
+      setQuantiteStockage(decodedToken.quantiteStockage); // Définit la quantité de stockage dans l'état
+      setToken(tokenData); // Définit le token dans l'état
 
-      fetchFiles(decodedToken.id, tokenData);
-      fetchUserInfos(decodedToken.id);
+      fetchFiles(decodedToken.id, tokenData); // Récupère les fichiers associés à l'utilisateur
+      fetchUserInfos(decodedToken.id); // Récupère les informations utilisateur associées à l'ID
     } else {
-      window.location.href = '/Denied';
+      window.location.href = '/Denied'; // Redirige vers une page d'accès refusé si le token est absent
     }
   }, []);
 
-  // on appelle l'api pour voir les fichiers présent ou pas
-  const fetchFiles = async (id, tokenData) => {
-    try {
-      const response = await axios.post('http://localhost:8000/file/show', {
-        token: tokenData,
-        userID: id,
+ // On appelle l'API pour vérifier la présence des fichiers
+const fetchFiles = async (id, tokenData) => {
+  try {
+    const response = await axios.post('http://localhost:8000/file/show', {
+      token: tokenData, // Inclut le token dans la requête
+      userID: id, // Envoie l'ID de l'utilisateur dans la requête
+    });
+
+    if (response.status === 200) {
+      setFiles(response.data.files); // Met à jour l'état avec les fichiers récupérés
+      setFilteredFiles(response.data.files); // Initialise les fichiers filtrés avec les données récupérées
+    } else {
+      setDenied(true); // Active l'état d'accès refusé si la requête échoue
+    }
+  } catch (error) {
+    console.error('Une erreur s\'est produite lors de la récupération des fichiers :', error); // Affiche une erreur en cas de problème
+  }
+};
+
+  // On appelle l'API pour récupérer les informations de l'utilisateur
+const fetchUserInfos = async (id) => {
+  try {
+    const response = await axios.post('http://localhost:8000/user/infosuser', {
+      userID: id, // Envoie l'ID de l'utilisateur dans la requête
+    });
+
+    if (response.status === 200) {
+      setUserInfos(response.data.user); // Met à jour l'état avec les informations utilisateur récupérées
+      setStockageDisponible(response.data.user.stockagedisponible); // Met à jour le stockage disponible dans l'état
+    } else {
+      setDenied(true); // Active l'état d'accès refusé si la requête échoue
+    }
+  } catch (error) {
+    console.error('Une erreur s\'est produite lors de la récupération des informations utilisateur :', error); // Affiche une erreur en cas de problème
+  }
+};
+
+
+ // Met à jour le nom du fichier
+const handleFileChange = (event) => {
+  const file = event.target.files[0]; // Récupère le premier fichier sélectionné
+  if (file) {
+    setFileName(file.name); // Met à jour l'état avec le nom du fichier
+    setFileToSend(file); // Enregistre le fichier pour l'envoi avec son contenu en binaires
+    setFileTaille(file.size); // Met à jour la taille du fichier dans l'état
+    if (file.size < quantiteStockage) { // Vérifie si la taille du fichier est inférieure à l'espace de stockage disponible
+      setButton(false); // Active le bouton d'envoi si la condition est remplie
+    }
+  }
+};
+
+
+
+ // Fonction qui appelle l'API pour insérer un fichier
+const handleFileUpload = async () => {
+  try {
+    const formData = new FormData();
+    formData.append('file', fileToSend); // Ajoute le fichier à envoyer au formData
+    formData.append('nom', fileName); // Ajoute le nom du fichier
+    formData.append('taille', fileTaille); // Ajoute la taille du fichier
+    formData.append('userid', userId); // Ajoute l'ID utilisateur
+    formData.append('stockagedisponible', stockageDisponible); // Ajoute l'espace de stockage disponible
+    formData.append('type', fileToSend.type); // Ajoute le type MIME du fichier
+
+    if (fileTaille > stockageDisponible || fileTaille > quantiteStockage) { // Vérifie si le fichier dépasse l'espace de stockage disponible
+      alert('Votre fichier dépasse la taille de stockage disponible'); // Alerte si la taille dépasse la limite
+    } else {
+      const response = await axios.post('http://localhost:8000/file/addFile', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data' // Spécifie l'en-tête multipart pour l'envoi de fichier,indique que la requête contient des données qui peuvent inclure des fichiers.
+
+
+        }
       });
-
-      if (response.status === 200) {
-        setFiles(response.data.files);
-        setFilteredFiles(response.data.files); // Initialiser les fichiers filtrés
-      } else {
-        setDenied(true);
-      }
-    } catch (error) {
-      console.error('Une erreur s\'est produite lors de la récupération des fichiers :', error);
+      alert('Fichier envoyé avec succès'); // Alerte de succès d'envoi
+      fetchFiles(userId, token); // Recharge les fichiers après l'envoi
+      setStockageDisponible(response.data); // Met à jour l'espace de stockage disponible après l'envoi
     }
-  };
+  } catch (error) {
+    console.error('Une erreur s\'est produite lors de l\'envoi du fichier :', error); // Gère les erreurs lors de l'envoi
+  }
+};
 
-  // on appelle l'api qui permet de récupérer les informations de l'utilisateur
-  const fetchUserInfos = async (id) => {
-    try {
-      const response = await axios.post('http://localhost:8000/user/infosuser', {
-        userID: id,
-      });
 
-      if (response.status === 200) {
-        setUserInfos(response.data.user);
-        setStockageDisponible(response.data.user.stockagedisponible);
-      } else {
-        setDenied(true);
-      }
-    } catch (error) {
-      console.error('Une erreur s\'est produite lors de la récupération des informations utilisateur :', error);
+
+// Fonction qui appelle l'API pour supprimer un fichier
+const handleFileDelete = async (ID, fileSize) => {
+  try {
+    const data = {
+      id: ID, // ID du fichier à supprimer
+      token: token, // Token d'authentification
+    };
+
+    const response = await axios.post('http://localhost:8000/file/delete', data); // Envoie la requête de suppression
+
+    if (response.status === 200) {
+      alert('Fichier supprimé avec succès'); // Alerte de confirmation de suppression
+      setFiles(files.filter(file => file.id !== ID)); // Met à jour la liste des fichiers après suppression
+      setFilteredFiles(filteredFiles.filter(file => file.id !== ID)); // Met à jour la liste filtrée des fichiers
+      updateUserStorage(fileSize); // Met à jour l'espace de stockage de l'utilisateur
     }
-  };
+  } catch (error) {
+    console.error('Une erreur s\'est produite lors de la suppression du fichier :', error); // Gère les erreurs lors de la suppression
+  }
+};
 
-  //met à jour le nom du fichier
-  const handleFileChange = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      setFileName(file.name);
-      setFileToSend(file);
-      setFileTaille(file.size);
-      if (file.size < quantiteStockage) {
-        setButton(false);
-      }
-    }
-  };
-
-
-  //function qui appelle l'api pour insérer un fichier
-  const handleFileUpload = async () => {
-    try {
-      const formData = new FormData();
-      formData.append('file', fileToSend);
-      formData.append('nom', fileName);
-      formData.append('taille', fileTaille);
-      formData.append('userid', userId);
-      formData.append('stockagedisponible', stockageDisponible);
-      formData.append('type', fileToSend.type);
-
-      if (fileTaille > stockageDisponible || fileTaille > quantiteStockage) {
-        alert('Votre fichier dépasse la taille de stockage disponible');
-      } else {
-        const response = await axios.post('http://localhost:8000/file/addFile', formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data'
-          }
-        });
-        alert('Fichier envoyé avec succès');
-        fetchFiles(userId, token);
-        setStockageDisponible(response.data);
-      }
-    } catch (error) {
-      console.error('Une erreur s\'est produite lors de l\'envoi du fichier :', error);
-    }
-  };
+ // Fonction qui appelle l'API pour mettre à jour le stockage disponible de l'utilisateur
+const updateUserStorage = async (fileSize) => {
+  try {
+    const newStorage = stockageDisponible + fileSize; // Calcule le nouveau stockage disponible
+    await axios.post('http://localhost:8000/user/updateuser', {
+      id: userId, // ID de l'utilisateur
+      size: newStorage, // Nouvelle taille de stockage disponible
+    });
+    setStockageDisponible(newStorage); // Met à jour l'état avec le nouveau stockage
+  } catch (error) {
+    console.error('Une erreur s\'est produite lors de la mise à jour du stockage utilisateur :', error); // Gère les erreurs lors de la mise à jour
+  }
+};
 
 
-  // function qui appelle l'api pour supprimer un fichier
-  const handleFileDelete = async (ID, fileSize) => {
-    try {
-      const data = {
-        id: ID,
-        token: token,
-      };
+const handleDeleteClick = (fileId, fileSize) => {
+  handleFileDelete(fileId, fileSize); // Appelle la fonction de suppression avec l'ID et la taille du fichier
+};
 
-      const response = await axios.post('http://localhost:8000/file/delete', data);
 
-      if (response.status === 200) {
-        alert('Fichier supprimé avec succès');
-        setFiles(files.filter(file => file.id !== ID));
-        setFilteredFiles(filteredFiles.filter(file => file.id !== ID)); // Mise à jour des fichiers filtrés
-        updateUserStorage(fileSize);
-      }
-    } catch (error) {
-      console.error('Une erreur s\'est produite lors de la suppression du fichier :', error);
-    }
-  };
+useEffect(() => {
+  let updatedFiles = [...files]; // Copie des fichiers pour les manipuler
 
-  //function qui apppelle l'api de mise à jours du stockage disponible pour l'utilisateur
-  const updateUserStorage = async (fileSize) => {
-    try {
-      const newStorage = stockageDisponible + fileSize;
-      await axios.post('http://localhost:8000/user/updateuser', {
-        id: userId,
-        size: newStorage,
-      });
-      setStockageDisponible(newStorage);
-    } catch (error) {
-      console.error('Une erreur s\'est produite lors de la mise à jour du stockage utilisateur :', error);
-    }
-  };
+  // Filtrer par nom
+  if (searchTerm) {
+    updatedFiles = updatedFiles.filter(file =>
+      file.nom.toLowerCase().includes(searchTerm.toLowerCase()) // Filtre les fichiers dont le nom correspond à la recherche
+    );
+  }
 
-  const handleDeleteClick = (fileId, fileSize) => {
-    handleFileDelete(fileId, fileSize);
-  };
+  // Filtrer par format
+  if (filterFormat) {
+    updatedFiles = updatedFiles.filter(file => {
+      const fileExtension = file.nom.split('.').pop(); // Récupère l'extension du fichier
+      return fileExtension && fileExtension.includes(filterFormat); // Filtre les fichiers par leur format (extension)
+    });
+  }
 
-  useEffect(() => {
-    let updatedFiles = [...files];
+  // Trier les fichiers
+  if (sortType === 'date') {
+    updatedFiles.sort((a, b) => new Date(b.uploadDate) - new Date(a.uploadDate)); // Trie par date d'upload (du plus récent au plus ancien)
+  } else if (sortType === 'size') {
+    updatedFiles.sort((a, b) => b.Taille - a.Taille); // Trie par taille de fichier (du plus grand au plus petit)
+  }
 
-    // Filtrer par nom
-    if (searchTerm) {
-      updatedFiles = updatedFiles.filter(file =>
-        file.nom.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    // Filtrer par format
-    if (filterFormat) {
-      updatedFiles = updatedFiles.filter(file => {
-        const fileExtension = file.nom.split('.').pop(); // Récupère l'extension du fichier
-        return fileExtension && fileExtension.includes(filterFormat); // Filtre par format
-      });
-    }
-
-    // Trier les fichiers
-    if (sortType === 'date') {
-      updatedFiles.sort((a, b) => new Date(b.uploadDate) - new Date(a.uploadDate));
-    } else if (sortType === 'size') {
-      updatedFiles.sort((a, b) => b.Taille - a.Taille);
-    }
-
-    setFilteredFiles(updatedFiles);
-  }, [searchTerm, filterFormat, sortType, files]);
+  setFilteredFiles(updatedFiles); // Met à jour les fichiers filtrés après les opérations
+}, [searchTerm, filterFormat, sortType, files]); // Dépendances : effectue le tri/filtrage à chaque changement
 
   return (
     <>
@@ -205,6 +212,7 @@ function PageAccueil() {
       <a onClick={() => window.location.href = '/DeleteUser'}>
         <img className='icon-delete' src={Delete} alt="Delete" />
       </a> 
+      
       <a onClick={() => window.location.href = '/NewTarifs'}>
         <img className='icon-add' src={Ajouter} alt="Ajouter" />
       </a>
@@ -251,18 +259,21 @@ function PageAccueil() {
       </div>
 
       <div className='files-list'>
-        {Array.isArray(filteredFiles) && filteredFiles.map((file, index) => (
-          <div className='file-item' key={index}>
-            {file.file && (
-              <a href={URL.createObjectURL(new Blob([new Uint8Array(file.file.data)], { type: 'application/pdf' }))} download={file.nom}>
-                <img className='file-logo' src={logo} alt="Logo" />
-              </a>
-            )}
-            <p className='file-name'>{file.nom}</p>
-            <button onClick={() => handleDeleteClick(file.id, file.Taille)} className='delete-button'>Supprimer</button>
-          </div>
-        ))}
-      </div>
+  {Array.isArray(filteredFiles) && filteredFiles.map((file, index) => (
+    <div className='file-item' key={index}>
+      {file.file && (
+        <a href={URL.createObjectURL(new Blob([new Uint8Array(file.file.data)]))} download={file.nom}>
+          {/*// un URL temporaire à partir des données binaires du fichier converties en `Blob` avec le type MIME 'application/pdf'.*/}
+
+          <img className='file-logo' src={logo} alt="Logo" /> {/* Affiche le logo du fichier */}
+        </a>
+      )}
+      <p className='file-name'>{file.nom}</p> {/* Affiche le nom du fichier */}
+      <button onClick={() => handleDeleteClick(file.id, file.Taille)} className='delete-button'>Supprimer</button> {/* Bouton pour supprimer le fichier */}
+    </div>
+  ))}
+</div>
+
 
       <div className='upload-section'>
         <input

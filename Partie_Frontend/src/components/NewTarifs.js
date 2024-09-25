@@ -116,7 +116,7 @@ function NewTarifs() {
                     formData.append('type', 'pdf');
     
 
-                    //envoie de la facture
+                    //ajoute de la facture
                     await axios.post('http://localhost:8000/file/addFile', formData, {
                         headers: {
                             'Content-Type': 'multipart/form-data',

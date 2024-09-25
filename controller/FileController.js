@@ -89,7 +89,7 @@ exports.InsertFile = async (req, res) => {
     const stockageFinal = stockagedisponible - taille;
 
 
-      // Traitez ici le contenu du fichier comme nécessaire
+      // Traite  le contenu du fichier comme nécessaire
       console.log('Contenu du fichier en hexadécimal :', fileBuffer.toString('hex'));
   
    await File.create({ nom: nom, file: fileBuffer, Taille: taille, userid: userid });
@@ -102,7 +102,6 @@ exports.InsertFile = async (req, res) => {
       
 
       // Mettre à jour l'espace de stockage disponible de l'utilisateur
-      // Assurez-vous d'avoir la logique appropriée pour mettre à jour stockagedisponible
   
       return res.status(200).json(stockageFinal);
     } catch (error) {
@@ -119,12 +118,24 @@ exports.InsertFile = async (req, res) => {
 exports.deleteFile = async (req, res) => {
     const { id } = req.body; 
     
-    await File.destroy({
-        where: { id: id }
-    });
-    res.status(200).json('Suppression réalisée');
+    try {
+        const result = await File.destroy({
+            where: { id: id }
+        });
 
+        // Vérifier si un fichier a été supprimé
+        if (result === 0) {
+            return res.status(404).json({ message: 'Fichier non trouvé ou déjà supprimé.' });
+        }
+
+        res.status(200).json({ message: 'Suppression réalisée' });
+
+    } catch (error) {
+        console.error('Erreur lors de la suppression du fichier:', error);
+        res.status(500).json({ message: 'Erreur lors de la suppression du fichier. Veuillez réessayer plus tard.' });
+    }
 };
+
 
 
 //API qui supprime tous les fichiers du user lors de la suppression de compte
